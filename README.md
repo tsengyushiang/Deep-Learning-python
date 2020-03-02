@@ -23,7 +23,7 @@
 ## Tips
 
 - 執行 codeblock `shift+enter`
-- 提示字 `tabl`
+- 提示字 `tab`
 
 ## Reference
 
