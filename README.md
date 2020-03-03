@@ -18,6 +18,7 @@
   ```
   cd C:\Users\tseng\Desktop\learnPytorch
   jupytor notebook
+  python -m notebook
   ```
 
 ## Tips
