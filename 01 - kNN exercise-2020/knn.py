@@ -31,17 +31,28 @@ class KNearestNeighbor(object):
           is the Euclidean distance between the ith test point and the jth training
           point.
         """
+        def euclidean(x, y):
+            x_transpose = np.transpose(x)
+            y_transpose = np.transpose(y)
+            dists = -2 * x.dot(y_transpose) + x.dot(x_transpose) + y.dot(y_transpose)
+            return dists
+
+
         num_test = X.shape[0]
         num_train = self.X_train.shape[0]
         dists = np.zeros((num_test, num_train))
 
+        for test_index,test_data in enumerate(X) :
+          for train_index,train_data in enumerate(self.X_train):
+            dists[test_index][train_index] = euclidean(test_data,train_data)
+        
         #####################################################################
         # TODO:                                                             #
         # Compute the l2 distance between the ith test point and the jth    #
         # training point, and store the result in dists[i, j]. You should   #
         # not use a loop over dimension.                                    #
         #####################################################################
-        pass
+        
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
@@ -91,8 +102,13 @@ class KNearestNeighbor(object):
         """
         num_test = dists.shape[0]
         y_pred = np.zeros(num_test)
-        for i in range(num_test):
-            closest_y = []
+        for map_index,distance_arr in enumerate(dists):
+            sort = np.argsort(distance_arr)
+            sort_labels = [self.y_train[value] for index,value in enumerate(sort)]
+            closest_y = sort_labels[:k]
+            bin_result = np.bincount(closest_y)
+            max_result = np.argmax(bin_result)
+            y_pred[map_index]=max_result
 
             #########################################################################
             # TODO:                                                                 #
