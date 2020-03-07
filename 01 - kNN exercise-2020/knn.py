@@ -150,6 +150,12 @@ class KNearestNeighbor(object):
         num_train = self.X_train.shape[0]
         dists = np.zeros((num_test, num_train))
 
+        X2 = np.sum(np.multiply(X, X), axis=1)[np.newaxis]
+        Y2 = np.sum(np.multiply(self.X_train, self.X_train), axis=1)[np.newaxis]
+        extendX2 = np.repeat(X2,num_train,axis=0)
+        extendY2 = np.repeat(Y2,num_test,axis=0)
+        dists = -2*(X@self.X_train.T)+extendX2.T+extendY2
+
         #######################################################################
         # TODO:                                                               #
         # Same as the compute_distances_two_loops function, but this time     #
