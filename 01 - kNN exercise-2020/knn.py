@@ -31,20 +31,10 @@ class KNearestNeighbor(object):
           is the Euclidean distance between the ith test point and the jth training
           point.
         """
-        def euclidean(x, y):
-            x_transpose = np.transpose(x)
-            y_transpose = np.transpose(y)
-            dists = -2 * x.dot(y_transpose) + x.dot(x_transpose) + y.dot(y_transpose)
-            return dists
-
 
         num_test = X.shape[0]
         num_train = self.X_train.shape[0]
         dists = np.zeros((num_test, num_train))
-
-        for test_index,test_data in enumerate(X) :
-          for train_index,train_data in enumerate(self.X_train):
-            dists[test_index][train_index] = euclidean(test_data,train_data)
         
         #####################################################################
         # TODO:                                                             #
@@ -52,7 +42,15 @@ class KNearestNeighbor(object):
         # training point, and store the result in dists[i, j]. You should   #
         # not use a loop over dimension.                                    #
         #####################################################################
-        
+        def euclidean(x, y):
+          x_transpose = np.transpose(x)
+          y_transpose = np.transpose(y)
+          dists = -2 * x.dot(y_transpose) + x.dot(x_transpose) + y.dot(y_transpose)
+          return dists
+
+        for test_index,test_data in enumerate(X) :
+          for train_index,train_data in enumerate(self.X_train):
+            dists[test_index][train_index] = euclidean(test_data,train_data)
         #####################################################################
         #                       END OF YOUR CODE                            #
         #####################################################################
@@ -102,13 +100,9 @@ class KNearestNeighbor(object):
         """
         num_test = dists.shape[0]
         y_pred = np.zeros(num_test)
-        for map_index,distance_arr in enumerate(dists):
-            sort = np.argsort(distance_arr)
-            sort_labels = [self.y_train[value] for index,value in enumerate(sort)]
-            closest_y = sort_labels[:k]
-            bin_result = np.bincount(closest_y)
-            max_result = np.argmax(bin_result)
-            y_pred[map_index]=max_result
+
+        for i in range(num_test):
+            closest_y = []
 
             #########################################################################
             # TODO:                                                                 #
@@ -121,7 +115,13 @@ class KNearestNeighbor(object):
             # Hint: You may find these functions useful.                            #
             # numpy.argsort, numpy.argmax, numpy.bincount                           #
             #########################################################################
-            pass
+            distance_arr = dists[i]
+            sort = np.argsort(distance_arr)
+            sort_labels = [self.y_train[value] for index,value in enumerate(sort)]
+            closest_y = sort_labels[:k]
+            bin_result = np.bincount(closest_y)
+            max_result = np.argmax(bin_result)
+            y_pred[i]=max_result
             #########################################################################
             #                         END OF YOUR CODE                              #
             #########################################################################
@@ -138,7 +138,11 @@ class KNearestNeighbor(object):
         # Same as the compute_distances_two_loops function, but this time     #
         # you should only a single loop over the test data.                   #
         #######################################################################
-        pass
+        for test_index,test_data in enumerate(X) :
+          X2 = (test_data@test_data.T)[np.newaxis]
+          Y2 = np.sum(np.multiply(self.X_train, self.X_train), axis=1)[np.newaxis]
+          extendX2 = np.repeat(X2,num_train,axis=0)
+          dists[test_index] = -2*(test_data@self.X_train.T)+extendX2.T+Y2
         #######################################################################
         #                         END OF YOUR CODE                            #
         #######################################################################
@@ -148,20 +152,18 @@ class KNearestNeighbor(object):
     def compute_distances_no_loops(self, X):
         num_test = X.shape[0]
         num_train = self.X_train.shape[0]
-        dists = np.zeros((num_test, num_train))
-
-        X2 = np.sum(np.multiply(X, X), axis=1)[np.newaxis]
-        Y2 = np.sum(np.multiply(self.X_train, self.X_train), axis=1)[np.newaxis]
-        extendX2 = np.repeat(X2,num_train,axis=0)
-        extendY2 = np.repeat(Y2,num_test,axis=0)
-        dists = -2*(X@self.X_train.T)+extendX2.T+extendY2
+        dists = np.zeros((num_test, num_train))        
 
         #######################################################################
         # TODO:                                                               #
         # Same as the compute_distances_two_loops function, but this time     #
         # you should NOT use loops.                                           #
         #######################################################################
-        pass
+        X2 = np.sum(np.multiply(X, X), axis=1)[np.newaxis]
+        Y2 = np.sum(np.multiply(self.X_train, self.X_train), axis=1)[np.newaxis]
+        extendX2 = np.repeat(X2,num_train,axis=0)
+        extendY2 = np.repeat(Y2,num_test,axis=0)
+        dists = -2*(X@self.X_train.T)+extendX2.T+extendY2
         #######################################################################
         #                         END OF YOUR CODE                            #
         #######################################################################
