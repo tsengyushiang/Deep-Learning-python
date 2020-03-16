@@ -15,12 +15,12 @@ class LinearRegression(object):
         Returns:
         - X_transformed: A numpy array of shape (N, D + 1)
         """
-
         #############################################################################
         # TODO: Append a vector of ones across the dimension of your input data.    #
         # This accounts for the bias or the constant in your hypothesis function.   #
         #############################################################################
-        pass
+        oneCol=np.ones((X.shape[0],1))
+        X_transformed = np.hstack((X,oneCol))
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -39,7 +39,8 @@ class LinearRegression(object):
         # Store the computed weights in self.params['W']                            #
         # Hint: lookup numpy.linalg.pinv                                            #
         #############################################################################
-        pass
+        X=self.feature_transform(X)
+        self.params['W'] = np.linalg.pinv(X.T@X)@X.T@y
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -67,7 +68,7 @@ class LinearRegression(object):
         # TODO: Compute for the predictions of the model on new data using the      #
         # learned weight vectors.                                                   #
         #############################################################################
-        prediction = None
+        prediction = X@W
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -92,7 +93,7 @@ class LinearRegression(object):
         # standard deviation determined by the parameter std_dev.                   #
         # Hint: Look up the function numpy.random.randn                             #
         #############################################################################
-        self.params['W'] = None
+        self.params['W'] = np.reshape(np.random.normal(0,std_dev,size=dim),(dim,1))
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -119,7 +120,7 @@ class LinearRegression(object):
         # TODO: Compute for the prediction value given the current weight vector.   #
         # Store the result in the prediction variable                               #
         #############################################################################
-        prediction = None
+        prediction = self.predict(X)
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -127,7 +128,8 @@ class LinearRegression(object):
         #############################################################################
         # TODO: Compute for the loss.                                               #
         #############################################################################
-        loss = None
+        d = prediction-y
+        loss = ((d.T@d)/(2*len(y)))[0][0]
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -138,8 +140,7 @@ class LinearRegression(object):
         # results in the grads dictionary. For example, grads['W'] should store     #
         # the gradient on W, and be a matrix of same size.                          #
         #############################################################################
-
-        grads['W'] = None
+        grads['W']= np.reshape((((prediction-y)*X).T).sum(axis=1)/N,(D,1))
 
         #############################################################################
         #                              END OF YOUR CODE                             #
@@ -185,8 +186,9 @@ class LinearRegression(object):
             # Hint: Look up the function numpy.random.choice      
             #       Make sure to set replacement to false. (replace=False)
             #########################################################################
-            X_batch = None
-            y_batch = None
+            choiceIndex = np.random.choice(range(len(X)), size=batch_size, replace=False)
+            X_batch = np.take(X,choiceIndex,axis=0)
+            y_batch = np.take(y,choiceIndex,axis=0)
             #########################################################################
             #                             END OF YOUR CODE                          #
             #########################################################################
@@ -200,7 +202,7 @@ class LinearRegression(object):
             # using stochastic gradient descent. You'll need to use the gradients   #
             # stored in the grads dictionary defined above.                         #
             #########################################################################
-            pass
+            self.params['W'] =  self.params['W']-learning_rate*grads['W']
             #########################################################################
             #                             END OF YOUR CODE                          #
             #########################################################################
