@@ -186,7 +186,7 @@ class LinearRegression(object):
             # Hint: Look up the function numpy.random.choice      
             #       Make sure to set replacement to false. (replace=False)
             #########################################################################
-            choiceIndex = np.random.choice(range(len(X)), size=batch_size, replace=False)
+            choiceIndex = np.random.choice(range(num_train), size=batch_size, replace=False)
             X_batch = np.take(X,choiceIndex,axis=0)
             y_batch = np.take(y,choiceIndex,axis=0)
             #########################################################################
@@ -202,7 +202,7 @@ class LinearRegression(object):
             # using stochastic gradient descent. You'll need to use the gradients   #
             # stored in the grads dictionary defined above.                         #
             #########################################################################
-            self.params['W'] =  self.params['W']-learning_rate*grads['W']
+            self.params['W'] =  self.params['W']-grads['W']*learning_rate
             #########################################################################
             #                             END OF YOUR CODE                          #
             #########################################################################
