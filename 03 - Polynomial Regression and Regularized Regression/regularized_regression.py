@@ -1,11 +1,11 @@
 import numpy as np
 
+
 class RegularizedRegression(object):
     def __init__(self):
         pass
 
-
-    def poly_feature_transform(self,X,poly_order=1):
+    def poly_feature_transform(self, X, poly_order=1):
         """
         Transforms the input data to match the specified polynomial order.
 
@@ -23,9 +23,16 @@ class RegularizedRegression(object):
         #############################################################################
         # TODO: Transform your inputs to the corresponding polynomial with order    #
         # given by the parameter poly_order.                                        #
-        #############################################################################           
-        pass
-        
+        #############################################################################
+        weights = []
+        for row in f_transform:
+            arr = np.array([])
+            for order in range(2, poly_order+1):
+                arr = np.append(arr, np.power(row, order), axis=0)
+            weights.append(arr.flatten())
+
+        f_transform = np.hstack((f_transform, weights))
+
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -34,8 +41,9 @@ class RegularizedRegression(object):
         # TODO: Append a vector of ones across the dimension of your input data.    #
         # This accounts for the bias or the constant in your hypothesis function.   #
         #############################################################################
-        pass
-        
+        bias = np.ones((f_transform.shape[0], 1))
+        f_transform = np.concatenate((f_transform, bias), axis=1)
+
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -50,24 +58,28 @@ class RegularizedRegression(object):
         - X: A numpy array of shape (num_test, D) containing test data consisting
              of num_test samples each of dimension D.
         - y: A numpy array of shape (num_test, 1) containing predicted values for the
-          test data, where y[i] is the predicted value for the test point X[i].  
+          test data, where y[i] is the predicted value for the test point X[i].
         - poly_order: Determines the order of the polynomial of the hypothesis function. (default is 1)
         - lambda_reg: (float) Regularization strength.
-        
+
         """
         # store the polynomial order in the object state
         self.poly_order = poly_order
-        self.params = {}        
+        self.params = {}
         self.params['W'] = None
-        
+
         #############################################################################
         # TODO: Compute for the weight vector for linear regression using the       #
         # normal equation / analytical solution.                                    #
         # Store the computed weights in self.params['W']                            #
-        # Hint: lookup numpy.linalg.pinv                                            # 
-        # How will you accomodate the lambda_reg in your analytical solution?       #  
+        # Hint: lookup numpy.linalg.pinv                                            #
+        # How will you accomodate the lambda_reg in your analytical solution?       #
         #############################################################################
-        pass
+        X = self.poly_feature_transform(X, poly_order)
+        Xsquare = X.T@X
+        self.params['W'] = np.linalg.pinv(
+            # Xsquare)@X.T@y
+            Xsquare+np.identity(Xsquare.shape[0])*lambda_reg)@X.T@y
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -82,7 +94,7 @@ class RegularizedRegression(object):
 
         Returns:
         - y: A numpy array of shape (num_test, 1) containing predicted values for the
-          test data, where y[i] is the predicted value for the test point X[i].  
+          test data, where y[i] is the predicted value for the test point X[i].
         """
 
         W = self.params['W']
@@ -90,20 +102,18 @@ class RegularizedRegression(object):
 
         if D != W.shape[0]:
             X = self.poly_feature_transform(X, self.poly_order)
-        
+
         #############################################################################
         # TODO: Compute for the predictions of the model on new data using the      #
         # learned weight vectors.                                                   #
         #############################################################################
         pass
-        prediction = None
+        prediction = X@W
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
-    
+
         return prediction
-
-
 
     def initialize_weights(self, dim, std_dev=1e-2):
         """
@@ -112,12 +122,12 @@ class RegularizedRegression(object):
         named self.params.
 
         W: weight vector; has shape (D, 1)
-        
+
         Inputs:
         - dim: (int) The dimension D of the input data.
         - std_dev: (float) Controls the standard deviation of the random values.
         """
-        
+
         self.params = {}
         #############################################################################
         # TODO: Initialize the weight vector to random values with                  #
@@ -125,11 +135,12 @@ class RegularizedRegression(object):
         # Hint: Look up the function numpy.random.randn                             #
         # Don't ignore the std_dev                                                  #
         #############################################################################
-        self.params['W'] = None
+        self.params['W'] = np.reshape(
+            np.random.normal(0, std_dev, size=dim), (dim, 1))
         #############################################################################
         #                              END OF YOUR CODE                             #
-        #############################################################################        
-    
+        #############################################################################
+
     def loss(self, X, y=None, lambda_reg=0.0):
         """
         Compute the loss and gradients for an iteration of linear regression.
@@ -146,7 +157,7 @@ class RegularizedRegression(object):
         - grads: Dictionary mapping parameter names to gradients of those parameters
           with respect to the loss function; has the same keys as self.params.
         """
-        
+
         # Unpack variables from the params dictionary
         W = self.params['W']
         N, D = X.shape
@@ -155,16 +166,17 @@ class RegularizedRegression(object):
         # TODO: Compute for the prediction value given the current weight vector.   #
         # Store the result in the prediction variable                               #
         #############################################################################
-        prediction = None
+        prediction = self.predict(X)
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
-        
+
         #############################################################################
         # TODO: Compute for the loss.                                               #
         #############################################################################
         pass
-        loss = None
+        d = prediction-y
+        loss = ((d.T@d)/(2*len(y)))[0][0]
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -174,18 +186,18 @@ class RegularizedRegression(object):
         # results in the grads dictionary. For example, grads['W'] should store     #
         # the gradient on W, and be a matrix of same size.                          #
         #############################################################################
-        pass
-        grads['W'] = None
-         
+        oldgrads = np.reshape(((d*X).T).sum(axis=1)/N, (D, 1))
+        grads['W'] = oldgrads + \
+            W*np.repeat(lambda_reg, oldgrads.shape[0])[np.newaxis].T
+
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
 
         return loss, grads
-        
-        
+
     def train(self, X, y, poly_order=1, learning_rate=0.2, lambda_reg=0, num_iters=100, std_dev=1e-2,
-            batch_size=20, verbose=False):
+              batch_size=20, verbose=False):
         """
         Train Linear Regression using stochastic gradient descent.
 
@@ -214,11 +226,12 @@ class RegularizedRegression(object):
         loss_history = []
         for it in range(num_iters):
 
-            indices = np.random.choice(num_train,batch_size,replace=False)
+            indices = np.random.choice(num_train, batch_size, replace=False)
             X_batch = X[indices]
             y_batch = y[indices]
-            
-            loss, grads = self.loss(X_batch, y=y_batch, lambda_reg=lambda_reg)
+
+            loss, grads = self.loss(X_batch, y=y_batch,
+                                    lambda_reg=lambda_reg)
             loss_history.append(np.squeeze(loss))
 
             #########################################################################
@@ -227,17 +240,11 @@ class RegularizedRegression(object):
             # using stochastic gradient descent. You'll need to use the gradients   #
             # stored in the grads dictionary defined above.                         #
             #########################################################################
-            self.params['W'] = None
+            self.params['W'] = self.params['W']-grads['W']*learning_rate
             #########################################################################
             #                             END OF YOUR CODE                          #
             #########################################################################
             if verbose and it % 100 == 0:
                 print('iteration %d / %d: loss %f' % (it, num_iters, loss))
 
-
         return loss_history
-
-    
-    
-    
-    
