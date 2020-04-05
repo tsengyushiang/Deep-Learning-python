@@ -119,7 +119,7 @@ class MultinomialLogisticRegression(object):
         # and L2 regularization for W. Store the result in the variable loss, 		#
         # which should be a scalar.                           						#
         #############################################################################
-        loss= -sum([np.log(score[i][value]) for i,value in enumerate(y)])/N + 0.5*lambda_reg*np.sum(W*W)
+        loss= -sum([np.log(score[i][value]) for i,value in enumerate(y)])/N
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
@@ -133,20 +133,9 @@ class MultinomialLogisticRegression(object):
         #																			#
         # Hint: You'll need fancy numpy indexing to compute for the gradients       #
         #############################################################################            
-        dW = np.zeros_like(W)
-        db = np.zeros_like(b)
-    
-        score[range(len(y)),y] -=1
-        for i in range(D):
-            for j in range(W.shape[1]):
-                dW[:,j]+=score[i][j]*X[i]/D
-                db[j]+=score[i][j]/N
-
-        dW+=lambda_reg*W
-        db+=lambda_reg*b
-
-        grads['W'] = dW
-        grads['b'] = db
+        score[range(len(y)),np.array(y)]-=1
+        grads['W'] = np.dot(X.T, score)/N + lambda_reg*W
+        grads['b'] = np.sum(score, axis = 0) / N
         #############################################################################
         #                              END OF YOUR CODE                             #
         #############################################################################
