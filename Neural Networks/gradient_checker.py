@@ -37,7 +37,7 @@ def compute_numerical_gradient(generic_function, variable, h=1e-5):
         # TODO: Create a copy of the original value of current element of           #
         # `variable`.                                                               #
         #############################################################################
-        pass
+        old_value = variable[idx]
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -46,7 +46,11 @@ def compute_numerical_gradient(generic_function, variable, h=1e-5):
         # TODO: Compute for the numerical gradient of the current element using     #
         # the central difference formula.                                           #
         #############################################################################
-        pass
+        variable[idx] = old_value + h
+        fxh1 = generic_function(variable)
+        variable[idx] = old_value - h
+        fxh_1 = generic_function(variable)
+        grad[idx] = (fxh1 - fxh_1) / 2/h
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
@@ -54,7 +58,7 @@ def compute_numerical_gradient(generic_function, variable, h=1e-5):
         #############################################################################
         # TODO: Restore the current elemend of `variable` to its original value.    #
         #############################################################################
-        pass
+        variable[idx] = old_value
         #############################################################################
         #                             END OF YOUR CODE                              #
         #############################################################################
